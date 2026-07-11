@@ -16,7 +16,7 @@
     if (updateHash !== false && window.location.hash !== '#grid') {
       history.pushState(null, '', '#grid');
     }
-    document.title = 'S10 Studio — The Grid';
+    document.title = 'S10 Studio — Games';
 
     // send keyboard/screen-reader focus to the new view's heading
     if (gridTitle) {
