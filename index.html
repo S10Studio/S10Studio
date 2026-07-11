@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S10 Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void: #050505;
+    --panel: #0d0d0d;
+    --paper: #f5f5f2;
+    --line: #2a2a28;
+    --line-soft: #1c1c1a;
+    --mid: #8c8c86;
+    --focus: #ffffff;
+    --ease: cubic-bezier(.65,0,.35,1);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--void);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  :focus-visible{ outline:2px solid var(--focus); outline-offset:3px; }
+
+  /* ambient grain texture */
+  .grain{
+    position:fixed; inset:-10px; pointer-events:none; z-index:50;
+    opacity:.05;
+    background-image:radial-gradient(rgba(255,255,255,.9) .5px, transparent .5px);
+    background-size:3px 3px;
+    animation:grainShift 9s steps(2) infinite;
+  }
+  @keyframes grainShift{
+    0%,100%{ transform:translate(0,0); }
+    50%{ transform:translate(-2px,2px); }
+  }
+
+  .view{ display:none; }
+  .view.is-active{ }
+
+  /* ---------- landing ---------- */
+  #view-landing.is-active{
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+    min-height:100vh;
+    padding:32px clamp(20px,5vw,64px);
+  }
+
+  .topline{
+    display:flex; justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--mid);
+  }
+
+  .hero{
+    display:flex; flex-direction:column; justify-content:center;
+    max-width:720px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--mid); margin:0 0 10px;
+  }
+  .wordmark{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(72px,18vw,220px);
+    line-height:.85;
+    letter-spacing:-.03em;
+    margin:0;
+  }
+  .sub{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:500;
+    font-size:clamp(14px,2.2vw,26px);
+    letter-spacing:.5em;
+    color:var(--mid);
+    margin:6px 0 22px 4px;
+  }
+  .hero-copy{
+    font-size:15px; line-height:1.6; color:var(--mid);
+    max-width:460px; margin:0 0 34px;
+  }
+
+  .btn{
+    align-self:flex-start;
+    display:inline-flex; align-items:center; gap:12px;
+    background:transparent; color:var(--paper);
+    border:1px solid var(--paper);
+    padding:16px 26px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+    cursor:pointer;
+    transition:background .3s var(--ease), color .3s var(--ease), gap .3s var(--ease);
+  }
+  .btn:hover, .btn:focus-visible{ background:var(--paper); color:var(--void); gap:18px; }
+
+  .botline{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px; letter-spacing:.15em; text-transform:uppercase;
+    color:var(--line);
+  }
+
+  /* ---------- grid / "the sheet" ---------- */
+  #view-grid.is-active{
+    display:block;
+    min-height:100vh;
+    padding:32px clamp(20px,5vw,64px) 64px;
+  }
+
+  .grid-header{
+    display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;
+    gap:24px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:24px;
+    margin-bottom:40px;
+  }
+  .back{
+    background:none; border:1px solid var(--line); color:var(--paper);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    padding:10px 16px; cursor:pointer;
+    display:inline-flex; gap:8px; align-items:center;
+    transition:border-color .25s;
+  }
+  .back:hover, .back:focus-visible{ border-color:var(--paper); }
+
+  .grid-title h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(28px,4vw,44px);
+    margin:0;
+  }
+  .grid-title p{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px; color:var(--mid);
+    letter-spacing:.03em;
+    margin:6px 0 0;
+  }
+
+  .sheet{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+
+  .frame{
+    position:relative;
+    background:var(--panel);
+    aspect-ratio:4/3;
+    padding:14px;
+  }
+  .frame::before, .frame::after{
+    content:""; position:absolute; width:10px; height:10px;
+    border-color:var(--line-soft);
+    transition:border-color .25s;
+  }
+  .frame::before{ top:8px; left:8px; border-top:1px solid; border-left:1px solid; }
+  .frame::after{ bottom:8px; right:8px; border-bottom:1px solid; border-right:1px solid; }
+  .frame:hover::before, .frame:hover::after{ border-color:var(--paper); }
+
+  .frame-id{
+    position:absolute; top:8px; right:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px; letter-spacing:.05em; color:var(--mid);
+  }
+
+  .embed-slot{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+  }
+  .frame-placeholder{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:400; font-size:28px;
+    color:var(--line-soft);
+    transition:color .25s;
+  }
+  .frame:hover .frame-placeholder{ color:var(--mid); }
+
+  @media (max-width:900px){
+    .sheet{ grid-template-columns:repeat(2, 1fr); }
+  }
+  @media (max-width:520px){
+    .sheet{ grid-template-columns:1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ============ LANDING VIEW ============ -->
+<section id="view-landing" class="view is-active" aria-hidden="false">
+  <header class="topline">
+    <span>S10 / STUDIO</span>
+    <span>ESTD 2026</span>
+  </header>
+
+  <div class="hero">
+    <p class="eyebrow">No color. Just light and shadow.</p>
+    <h1 class="wordmark">S10</h1>
+    <p class="sub">STUDIO</p>
+    <p class="hero-copy">A light table for work in progress — twelve frames, held open for whatever you're building next.</p>
+    <button id="btn-enter" class="btn" type="button">
+      <span>Enter the grid</span>
+      <span aria-hidden="true">&rarr;</span>
+    </button>
+  </div>
+
+  <footer class="botline">
+    <span>SCROLL FOR NOTHING — THIS IS THE WHOLE PAGE</span>
+  </footer>
+</section>
+
+<!-- ============ GRID VIEW ("THE SHEET") ============ -->
+<section id="view-grid" class="view" aria-hidden="true">
+  <header class="grid-header">
+    <button id="btn-back" class="back" type="button">
+      <span aria-hidden="true">&larr;</span> S10
+    </button>
+    <div class="grid-title">
+      <h2>The Sheet</h2>
+      <p>Twelve frames. Drop your own HTML into any slot.</p>
+    </div>
+  </header>
+
+  <div class="sheet" id="sheet">
+
+    <div class="frame">
+      <span class="frame-id">S10–01</span>
+      <div class="embed-slot" id="embed-01">
+        <!-- Paste embed HTML for slot 01 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–02</span>
+      <div class="embed-slot" id="embed-02">
+        <!-- Paste embed HTML for slot 02 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–03</span>
+      <div class="embed-slot" id="embed-03">
+        <!-- Paste embed HTML for slot 03 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–04</span>
+      <div class="embed-slot" id="embed-04">
+        <!-- Paste embed HTML for slot 04 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–05</span>
+      <div class="embed-slot" id="embed-05">
+        <!-- Paste embed HTML for slot 05 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–06</span>
+      <div class="embed-slot" id="embed-06">
+        <!-- Paste embed HTML for slot 06 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–07</span>
+      <div class="embed-slot" id="embed-07">
+        <!-- Paste embed HTML for slot 07 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–08</span>
+      <div class="embed-slot" id="embed-08">
+        <!-- Paste embed HTML for slot 08 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–09</span>
+      <div class="embed-slot" id="embed-09">
+        <!-- Paste embed HTML for slot 09 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–10</span>
+      <div class="embed-slot" id="embed-10">
+        <!-- Paste embed HTML for slot 10 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–11</span>
+      <div class="embed-slot" id="embed-11">
+        <!-- Paste embed HTML for slot 11 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <span class="frame-id">S10–12</span>
+      <div class="embed-slot" id="embed-12">
+        <!-- Paste embed HTML for slot 12 here, then delete the span below. -->
+        <span class="frame-placeholder" aria-hidden="true">+</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
